@@ -64,8 +64,8 @@ public:
     void setViewDisasm(VIEWDISASM viewDisasm);
     XBinary::DM getDisasmMode();  // TODO Check -> remove
     XADDR getSelectionInitAddress();
-    DEVICESTATE getDeviceState(bool bGlobalOffset = false);
-    void setDeviceState(const DEVICESTATE &deviceState, bool bGlobalOffset = false);
+    virtual DEVICESTATE getDeviceState() override;
+    virtual void setDeviceState(const DEVICESTATE &deviceState) override;
     // virtual qint64 deviceOffsetToViewPos(qint64 nOffset, bool bGlobalOffset = false);
     // virtual qint64 deviceSizeToViewSize(qint64 nOffset, qint64 nSize, bool bGlobalOffset = false);
     // virtual qint64 viewPosToDeviceOffset(qint64 nViewPos, bool bGlobalOffset = false);
@@ -139,6 +139,7 @@ private:
         QColor colSelected;
         QColor colBreakpoint;
         QColor colAnalyzed;
+        QColor colCurrentIP;
     };
 
     void drawText(QPainter *pPainter, qint32 nLeft, qint32 nTop, qint32 nWidth, qint32 nHeight, const QString &sText, TEXT_OPTION *pTextOption);

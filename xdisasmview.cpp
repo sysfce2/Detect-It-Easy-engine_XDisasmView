@@ -20,6 +20,15 @@
  */
 #include "xdisasmview.h"
 
+// A relative branch gets a drawn arrow lane only for jumps. Calls also carry a
+// relType, but they are intentionally not rendered as arrows; keeping the lane
+// reservation (updateArrows) and the drawing (paintColumn) in agreement here
+// stops calls from reserving invisible lanes that push real jump arrows aside.
+static bool isDrawableArrow(quint32 nRelType)
+{
+    return (nRelType == XDisasmAbstract::RELTYPE_JMP) || (nRelType == XDisasmAbstract::RELTYPE_JMP_UNCOND) || (nRelType == XDisasmAbstract::RELTYPE_JMP_COND);
+}
+
 XDisasmView::XDisasmView(QWidget *pParent) : XDeviceTableEditView(pParent)
 {
     addShortcut(X_ID_DISASM_GOTO_OFFSET, this, SLOT(_goToOffsetSlot()));
@@ -172,19 +181,17 @@ XADDR XDisasmView::getSelectionInitAddress()
 {
     XADDR nResult = -1;
 
-    qint64 nOffset = getSelectionInitOffset();
+    XVPOS nViewPos = getSelectionInitOffset();  // NOTE: this returns a view position, not a device offset
 
-    if (nOffset != -1) {
-        nResult = XBinary::offsetToAddress(getBinaryView()->getMemoryMap(), nOffset);
+    if (nViewPos != -1) {
+        nResult = getBinaryView()->viewPosToAddress(nViewPos);  // maps through the view struct; returns (XADDR)-1 when unmapped
     }
 
     return nResult;
 }
 
-XDeviceTableView::DEVICESTATE XDisasmView::getDeviceState(bool bGlobalOffset)
+XDeviceTableView::DEVICESTATE XDisasmView::getDeviceState()
 {
-    Q_UNUSED(bGlobalOffset)
-
     DEVICESTATE result = {};
     STATE state = getState();
 
@@ -199,10 +206,8 @@ XDeviceTableView::DEVICESTATE XDisasmView::getDeviceState(bool bGlobalOffset)
     return result;
 }
 
-void XDisasmView::setDeviceState(const DEVICESTATE &deviceState, bool bGlobalOffset)
+void XDisasmView::setDeviceState(const DEVICESTATE &deviceState)
 {
-    Q_UNUSED(bGlobalOffset)
-
     _goToViewPos(getBinaryView()->deviceOffsetToViewPos(deviceState.nStartDeviceOffset));
     _initSetSelection(getBinaryView()->deviceOffsetToViewPos(deviceState.nSelectionDeviceOffset), deviceState.nSelectionSize);
 
@@ -385,10 +390,18 @@ void XDisasmView::drawText(QPainter *pPainter, qint32 nLeft, qint32 nTop, qint32
 
     rectText.setLeft(nLeft + getCharWidth());
     rectText.setTop(nTop + getLineDelta());
-    rectText.setWidth(nWidth);
+    rectText.setWidth(nWidth - getCharWidth());  // account for the one-char left inset so the rect stays inside the cell
     rectText.setHeight(nHeight - getLineDelta());
 
-    if (pTextOption->bIsSelected) {
+    if (pTextOption->bIsCurrentIP) {
+        pPainter->fillRect(nLeft, nTop, nWidth, nHeight, pTextOption->colCurrentIP);
+    }
+
+    if (pTextOption->bIsBreakpoint) {  // a breakpoint on the current line takes visual precedence
+        pPainter->fillRect(nLeft, nTop, nWidth, nHeight, pTextOption->colBreakpoint);
+    }
+
+    if (pTextOption->bIsSelected) {  // selection paints over any breakpoint / current-IP tint
         pPainter->fillRect(nLeft, nTop, nWidth, nHeight, pTextOption->colSelected);
     }
 
@@ -406,7 +419,7 @@ void XDisasmView::drawDisasmText(QPainter *pPainter, qint32 nLeft, qint32 nTop, 
         QRectF rectText;
         rectText.setLeft(nLeft + getCharWidth());
         rectText.setTop(nTop + getLineDelta());
-        rectText.setWidth(nWidth);
+        rectText.setWidth(nWidth - getCharWidth());  // account for the one-char left inset so the rect stays inside the cell
         rectText.setHeight(nHeight - getLineDelta());
 
         getBinaryView()->getDisasmCore()->drawDisasmText(pPainter, rectText, disasmResult);
@@ -695,6 +708,12 @@ void XDisasmView::getRecords()
     qint32 nNumberLinesProPage = getLinesProPage();
     XVPOS nCurrentViewPos = nViewPosStart;
 
+#ifdef USE_XPROCESS
+    // Read the debugger state once per rebuild rather than per line.
+    bool bIsDebugger = getXInfoDB()->isDebugger();
+    XADDR nCurrentIP = getXInfoDB()->getCurrentInstructionPointerCache();
+#endif
+
     for (qint32 i = 0; i < nNumberLinesProPage; i++) {
         if (nCurrentViewPos < getBinaryView()->getViewSize()) {
             qint64 nDataSize = 0;
@@ -722,8 +741,18 @@ void XDisasmView::getRecords()
                 }
 
                 if (record.nDeviceOffset != -1) {
-                    if (m_viewMethod == VIEWMETHOD_NONE) {
-                        nBufferSize = (qint32)qMin((qint64)m_nOpcodeSize, getBinaryView()->getInData().pDevice->size() - record.nDeviceOffset);  // qint64 to avoid overflow on large files
+                    // VIEWMETHOD_ANALYZED needs a populated XInfoDB state; when it is unavailable
+                    // (the analysis backend is not wired yet) fall back to the linear decode below
+                    // so the view is never blank.
+                    bool bUseAnalyzed = (m_viewMethod == VIEWMETHOD_ANALYZED) && (pState != nullptr);
+
+                    if (!bUseAnalyzed) {
+                        // Clamp the read to the bytes remaining in THIS region as well as to the
+                        // device size, so a single instruction never consumes bytes that belong to
+                        // the next (possibly non-contiguous) region. Mirrors getDisasmViewPos().
+                        qint64 nRegionRemain = (viewStruct.nOffset + viewStruct.nSize) - record.nDeviceOffset;
+                        qint64 nDeviceRemain = getBinaryView()->getInData().pDevice->size() - record.nDeviceOffset;
+                        nBufferSize = (qint32)qMin(qMin((qint64)m_nOpcodeSize, nRegionRemain), nDeviceRemain);  // qint64 to avoid overflow on large files
 
                         baBuffer = read_array(record.nDeviceOffset, nBufferSize);
                         nBufferSize = baBuffer.size();
@@ -734,11 +763,24 @@ void XDisasmView::getRecords()
 
                         record.disasmResult = getBinaryView()->getDisasmCore()->disAsm(baBuffer.data(), baBuffer.size(), nVirtualAddress, m_disasmOptions);
 
-                        nBufferSize = record.disasmResult.nSize;
-                        baBuffer.resize(nBufferSize);
-                        record.sBytes = baBuffer.toHex().data();
-
-                        nDataSize = nBufferSize;
+                        if ((record.disasmResult.nSize == 0) || ((qint64)record.disasmResult.nSize > nRegionRemain)) {
+                            // Undecodable, or the instruction would spill past the region boundary:
+                            // show a single data byte and keep advancing instead of aborting the page.
+                            record.disasmResult = XDisasmAbstract::DISASM_RESULT();
+                            record.disasmResult.bIsValid = true;
+                            record.disasmResult.nAddress = nVirtualAddress;
+                            record.disasmResult.nSize = 1;
+                            record.disasmResult.sMnemonic = m_disasmOptions.bIsUppercase ? QString("DB") : QString("db");
+                            baBuffer.resize(1);
+                            record.sBytes = baBuffer.toHex().data();
+                            record.disasmResult.sOperands = record.sBytes;
+                            nDataSize = 1;
+                        } else {
+                            nBufferSize = record.disasmResult.nSize;
+                            baBuffer.resize(nBufferSize);
+                            record.sBytes = baBuffer.toHex().data();
+                            nDataSize = nBufferSize;
+                        }
                     } else if (m_viewMethod == VIEWMETHOD_ANALYZED) {
                         if (pState) {
                             qint32 nIndex = getXInfoDB()->_searchXRecordByAddress(pState, nVirtualAddress, false);
@@ -799,19 +841,33 @@ void XDisasmView::getRecords()
                 break;
             }
 
-            //             if (getXInfoDB()) {
-            // #ifdef USE_XPROCESS
-            //                 record.bIsCurrentIP = (record.nVirtualAddress == nCurrentIP);
-            //                 // TODO different colors
-            //                 record.breakpointType = getXInfoDB()->findBreakPointByRegion(record.nVirtualAddress, record.disasmResult.nSize).bpType;
-            // #endif
-            //             }
+            if (getXInfoDB()) {
+                // Symbol name for the label column (do not clobber a label already set by the
+                // analyzed branch above).
+                if ((record.disasmResult.nAddress != (XADDR)-1) && record.sLabel.isEmpty()) {
+                    record.sLabel = getXInfoDB()->getSymbolStringByAddress(record.disasmResult.nAddress);
+                }
 
-            //             if (record.nVirtualAddress != (XADDR)-1) {
-            //                 if (getXInfoDB()) {
-            //                     record.sLabel = getXInfoDB()->getSymbolStringByAddress(record.nVirtualAddress);
-            //                 }
-            //             }
+                // User comment for the comment column, keyed on the instruction's device range.
+                if ((record.nDeviceOffset != -1) && (record.disasmResult.nSize > 0)) {
+                    QVector<XInfoDB::BOOKMARKRECORD> listBookmarks =
+                        getXInfoDB()->getBookmarkRecords(record.nDeviceOffset, XBinary::LT_OFFSET, record.disasmResult.nSize);
+
+                    if (!listBookmarks.isEmpty()) {
+                        record.sComment = listBookmarks.at(0).sComment;
+                    }
+                }
+
+#ifdef USE_XPROCESS
+                // Debugger indicators: flag the current instruction pointer and any breakpoint that
+                // covers this instruction. paintCell() paints these in the breakpoint gutter (green =
+                // current IP, red = breakpoint) and tints the location cell for breakpoints.
+                if (bIsDebugger && (record.disasmResult.nAddress != (XADDR)-1)) {
+                    record.bIsCurrentIP = ((nCurrentIP != (XADDR)-1) && (record.disasmResult.nAddress == nCurrentIP));
+                    record.breakpointType = getXInfoDB()->findBreakPointByRegion(record.disasmResult.nAddress, record.disasmResult.nSize).bpType;
+                }
+#endif
+            }
 
             //             QList<HIGHLIGHTREGION> listHighLightRegions;
 
@@ -843,7 +899,7 @@ void XDisasmView::updateArrows()
     qint32 nNumberOfRecords = m_listRecords.count();
 
     for (qint32 i = 0; i < nNumberOfRecords; i++) {
-        if (m_listRecords.at(i).disasmResult.relType) {
+        if (isDrawableArrow(m_listRecords.at(i).disasmResult.relType)) {
             XADDR nXrefTo = m_listRecords.at(i).disasmResult.nXrefToRelative;
             XADDR nCurrentAddress = m_listRecords.at(i).disasmResult.nAddress;
 
@@ -961,11 +1017,9 @@ void XDisasmView::updateLocations()
                 _nCurrent = m_listRecords.at(i).disasmResult.nAddress;
             }
 
-            // if (m_listRecords.at(i).nVirtualAddress != (XADDR)-1) {
-            //     if (getXInfoDB()) {
-            //         sSymbol = getXInfoDB()->getSymbolStringByAddress(m_listRecords.at(i).nVirtualAddress);
-            //     }
-            // }
+            if (getXInfoDB() && (m_listRecords.at(i).disasmResult.nAddress != (XADDR)-1)) {
+                sSymbol = getXInfoDB()->getSymbolStringByAddress(m_listRecords.at(i).disasmResult.nAddress);
+            }
 
             if (m_bIsLocationColon) {
                 m_listRecords[i].sLocation = XBinary::valueToHexColon(mode, _nCurrent);
@@ -1005,10 +1059,9 @@ XAbstractTableView::OS XDisasmView::cursorPositionToOS(const XAbstractTableView:
             osResult.nViewPos = nBlockOffset;
             osResult.nSize = nBlockSize;
         } else {
-            if (!isViewPosValid(osResult.nViewPos)) {
-                osResult.nViewPos = getBinaryView()->getViewSize();  // TODO Check
-                osResult.nSize = 0;
-            }
+            // Click landed past the last built record: clamp to the view end.
+            osResult.nViewPos = getBinaryView()->getViewSize();
+            osResult.nSize = 0;
         }
     }
 
@@ -1063,27 +1116,24 @@ void XDisasmView::updateData()
 
 void XDisasmView::paintColumn(QPainter *pPainter, qint32 nColumn, qint32 nLeft, qint32 nTop, qint32 nWidth, qint32 nHeight)
 {
-    Q_UNUSED(nHeight)
-
-    qint32 nArrowDelta = 0;
-
     if (nColumn == COLUMN_ARROWS) {
         qint32 nNumberOfRecords = m_listRecords.count();
 
         if (nNumberOfRecords) {
+            pPainter->save();
+            pPainter->setClipRect(nLeft, nTop, nWidth, nHeight);  // keep deep/nested arrow lanes from spilling out of the column
+
             for (qint32 i = 0; i < nNumberOfRecords; i++) {
-                if ((m_listRecords.at(i).disasmResult.relType == XDisasmAbstract::RELTYPE_JMP) ||
-                    (m_listRecords.at(i).disasmResult.relType == XDisasmAbstract::RELTYPE_JMP_COND) ||
-                    (m_listRecords.at(i).disasmResult.relType == XDisasmAbstract::RELTYPE_JMP_UNCOND)) {
+                if (isDrawableArrow(m_listRecords.at(i).disasmResult.relType)) {
                     bool bIsSelected = isViewPosSelected(m_listRecords.at(i).nViewPos);
                     bool bIsCond = (m_listRecords.at(i).disasmResult.relType == XDisasmAbstract::RELTYPE_JMP_COND);
 
                     QPointF point1;
-                    point1.setX(nLeft + nWidth - nArrowDelta);
+                    point1.setX(nLeft + nWidth);
                     point1.setY(nTop + ((i + 0.5) * getLineHeight()));
 
                     QPointF point2;
-                    point2.setX((nLeft + nWidth - nArrowDelta) - getCharWidth() * (m_listRecords.at(i).nArrayLevel));
+                    point2.setX((nLeft + nWidth) - getCharWidth() * (m_listRecords.at(i).nArrayLevel));
                     point2.setY(point1.y());
 
                     QPointF point3;
@@ -1117,6 +1167,8 @@ void XDisasmView::paintColumn(QPainter *pPainter, qint32 nColumn, qint32 nLeft, 
                     }
                 }
             }
+
+            pPainter->restore();
         }
     } else if (nColumn == COLUMN_LABEL) {
         // TODO
@@ -1167,6 +1219,7 @@ void XDisasmView::paintCell(QPainter *pPainter, qint32 nRow, qint32 nColumn, qin
 #ifdef USE_XPROCESS
         if ((m_listRecords.at(nRow).bIsCurrentIP) && (nColumn == COLUMN_LOCATION)) {
             textOption.bIsCurrentIP = true;
+            textOption.colCurrentIP = getColor(TCLOLOR_CURRENTIP);
         }
 
         if ((m_listRecords.at(nRow).breakpointType != XInfoDB::BPT_UNKNOWN) && (nColumn == COLUMN_LOCATION)) {

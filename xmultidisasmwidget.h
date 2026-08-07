@@ -85,7 +85,6 @@ signals:
 private:
     Ui::XMultiDisasmWidget *ui;
     XBinary::INDATA m_inData;
-    XInfoDB *m_pXInfoDB;
     OPTIONS m_options;
 };
 

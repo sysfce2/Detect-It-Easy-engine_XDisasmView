@@ -68,7 +68,7 @@ void DialogMultiDisasmSignature::setData(QIODevice *pDevice, qint64 nOffset, XBi
 
 void DialogMultiDisasmSignature::reload()
 {
-    if (!m_pDisasmCore) {
+    if (!m_pDisasmCore || !m_pMemoryMap || !m_pDevice) {
         return;
     }
 
@@ -289,6 +289,10 @@ void DialogMultiDisasmSignature::on_comboBoxMethod_currentIndexChanged(int nInde
 
 void DialogMultiDisasmSignature::on_pushButtonScan_clicked()
 {
+    if (!m_pMemoryMap || !m_pDevice) {
+        return;
+    }
+
     SearchValuesWidget::OPTIONS options = {};
     options.fileType = m_pMemoryMap->fileType;
     options.valueType = XBinary::VT_SIGNATURE;

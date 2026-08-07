@@ -114,6 +114,64 @@ void XDisasmViewOptionsWidget::setDefaultValues(XOptions *pOptions, MODE mode)
         pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
         // TODO more
     }
+
+    // Other architectures (only registered in the generic multi-arch mode)
+    if (mode == MODE_ALL) {
+        // MIPS
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        // PowerPC
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        // SPARC
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        // M68K
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        // MOS 65xx
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        // BPF
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+    }
 }
 
 QList<DialogViewColors::RECORD> XDisasmViewOptionsWidget::getRecords(MODE mode)
@@ -263,6 +321,219 @@ QList<DialogViewColors::RECORD> XDisasmViewOptionsWidget::getRecords(MODE mode)
         {
             DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_ARM_OPCODE_NOP};
             listResult.append(record);
+        }
+    }
+
+    if (mode == MODE_ALL) {
+        {
+            QString sGroup = "MIPS";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_MIPS_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_MIPS_OPCODE_NOP};
+                listResult.append(record);
+            }
+        }
+        {
+            QString sGroup = "PowerPC";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_PPC_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_PPC_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_PPC_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_PPC_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_PPC_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_PPC_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_PPC_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_PPC_OPCODE_NOP};
+                listResult.append(record);
+            }
+        }
+        {
+            QString sGroup = "SPARC";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_SPARC_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_SPARC_OPCODE_NOP};
+                listResult.append(record);
+            }
+        }
+        {
+            QString sGroup = "M68K";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_M68K_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_M68K_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_M68K_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_M68K_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_M68K_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_M68K_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_M68K_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_M68K_OPCODE_NOP};
+                listResult.append(record);
+            }
+        }
+        {
+            QString sGroup = "MOS 65xx";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_MOS65XX_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_NOP};
+                listResult.append(record);
+            }
+        }
+        {
+            QString sGroup = "BPF";
+            {
+                DialogViewColors::RECORD record = {sGroup, tr("General registers"), XOptions::ID_DISASM_COLOR_BPF_REGS_GENERAL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "CALL", XOptions::ID_DISASM_COLOR_BPF_OPCODE_CALL};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "RET", XOptions::ID_DISASM_COLOR_BPF_OPCODE_RET};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "JMP", XOptions::ID_DISASM_COLOR_BPF_OPCODE_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "COND JMP", XOptions::ID_DISASM_COLOR_BPF_OPCODE_COND_JMP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "PUSH", XOptions::ID_DISASM_COLOR_BPF_OPCODE_PUSH};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "POP", XOptions::ID_DISASM_COLOR_BPF_OPCODE_POP};
+                listResult.append(record);
+            }
+            {
+                DialogViewColors::RECORD record = {sGroup, "NOP", XOptions::ID_DISASM_COLOR_BPF_OPCODE_NOP};
+                listResult.append(record);
+            }
         }
     }
     return listResult;

@@ -37,7 +37,6 @@ XMultiDisasmWidget::XMultiDisasmWidget(QWidget *pParent) : XShortcutsWidget(pPar
     ui->comboBoxMethod->setToolTip(tr("Method"));
     ui->comboBoxView->setToolTip(tr("View"));
 
-    m_pXInfoDB = nullptr;
     m_options = {};
 
     // TODO BPF
@@ -100,7 +99,6 @@ void XMultiDisasmWidget::cleanup()
     XBinaryView::OPTIONS options = {};
     ui->scrollAreaDisasm->setData(XFormats::createINDATA(options.fileType, nullptr, options.bIsImage, options.nModuleAddress), options);
     ui->scrollAreaDisasm->setXInfoDB(nullptr);
-    m_pXInfoDB = nullptr;
     XFormats::removeDevice(pDevice, m_inData);
     m_inData = {};
     m_options = {};
