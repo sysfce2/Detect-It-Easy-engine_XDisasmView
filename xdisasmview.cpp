@@ -97,7 +97,13 @@ void XDisasmView::adjustView()
 
     // g_dmFamily = XBinary::getDisasmFamily(g_options.disasmMode);
 
-    // TODO BP color
+    // Current-IP line highlight is user-configurable (background slot of ID_DISASM_COLOR_CURRENTIP);
+    // fall back to the constructor default when the option is empty/unset.
+    XOptions::COLOR_RECORD colorCurrentIP = XDisasmCore::getColorRecord(getGlobalOptions(), XOptions::ID_DISASM_COLOR_CURRENTIP);
+    QColor colCurrentIP = XOptions::stringToColor(colorCurrentIP.sColorBackground);
+    if (colCurrentIP.isValid()) {
+        setColor(TCLOLOR_CURRENTIP, colCurrentIP);
+    }
 
     // if (getXInfoDB()) {
     //     g_pDisasmCore = &(getXInfoDB()->getState(g_options.memoryMapRegion.fileType)->disasmCore);

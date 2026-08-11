@@ -72,105 +72,131 @@ void XDisasmViewOptionsWidget::setDefaultValues(XOptions *pOptions, MODE mode)
     pOptions->addID(XOptions::ID_DISASM_HIGHLIGHT, true);
     pOptions->addID(XOptions::ID_DISASM_UPPERCASE, false);
 
+    // --- Default syntax-highlight palette (light background) ---------------------------------------
+    // Distinct, muted hues so mnemonic / number / register-class / control-flow tokens are easy to tell
+    // apart. The previous defaults painted every register class AND call/ret/syscall the same harsh red
+    // (so "call rax" was all red), and gave generic mnemonics the same blue as numbers. Each value is a
+    // "main|background" pair; an empty background slot means transparent.
+    const QString sMnemonic = QColor(0, 0, 160).name() + "|";     // generic opcode    - blue
+    const QString sNumber = QColor(0, 120, 0).name() + "|";       // immediates        - green
+    const QString sRef = QColor(0, 110, 140).name() + "|";        // memory / refs     - teal
+    const QString sRegGen = QColor(150, 0, 0).name() + "|";       // general registers - dark red
+    const QString sRegStack = QColor(170, 85, 0).name() + "|";    // stack pointer     - brown
+    const QString sRegSeg = QColor(0, 128, 128).name() + "|";     // segment registers - teal
+    const QString sRegDebug = QColor(128, 128, 0).name() + "|";   // debug registers   - olive
+    const QString sRegIP = QColor(199, 21, 133).name() + "|";     // instruction ptr   - violet-red
+    const QString sRegFlags = QColor(128, 0, 128).name() + "|";   // flags register    - purple
+    const QString sRegFPU = QColor(85, 107, 47).name() + "|";     // fpu st()          - dark olive
+    const QString sRegVec = QColor(46, 139, 87).name() + "|";     // xmm/ymm/zmm        - sea green
+    const QString sOpCall = QColor(140, 0, 176).name() + "|";     // call / syscall    - purple
+    const QString sOpJmp = QColor(0, 0, 205).name() + "|";        // unconditional jmp - blue
+    const QString sOpCondJmp = QColor(30, 140, 30).name() + "|";  // conditional jmp   - green
+    const QString sOpRet = QColor(178, 34, 34).name() + "|";      // ret               - firebrick
+    const QString sOpStack = QColor(40, 100, 180).name() + "|";   // push / pop        - steel blue
+    const QString sOpNop = QColor(150, 150, 150).name() + "|";    // nop               - gray
+    const QString sOpInt3 = QColor(120, 120, 120).name() + "|";   // int3 / filler     - dark gray
+
     // Colors
     pOptions->addID(XOptions::ID_DISASM_COLOR_ARROWS, QString("%1|%2").arg("").arg(""));
     pOptions->addID(XOptions::ID_DISASM_COLOR_ARROWS_SELECTED, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-    pOptions->addID(XOptions::ID_DISASM_COLOR_REGS, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));      // TODO color
-    pOptions->addID(XOptions::ID_DISASM_COLOR_NUMBERS, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));  // TODO color
-    pOptions->addID(XOptions::ID_DISASM_COLOR_OPCODE, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-    pOptions->addID(XOptions::ID_DISASM_COLOR_REFS, QString("%1|%2").arg(QColor(Qt::darkGreen).name()).arg(""));
+    pOptions->addID(XOptions::ID_DISASM_COLOR_REGS, sRegGen);
+    pOptions->addID(XOptions::ID_DISASM_COLOR_NUMBERS, sNumber);
+    pOptions->addID(XOptions::ID_DISASM_COLOR_OPCODE, sMnemonic);
+    pOptions->addID(XOptions::ID_DISASM_COLOR_REFS, sRef);
+    // Current instruction pointer line: highlight lives in the background slot (translucent green by default).
+    pOptions->addID(XOptions::ID_DISASM_COLOR_CURRENTIP, QString("%1|%2").arg("").arg(QColor(0, 160, 0, 90).name(QColor::HexArgb)));
     // X86
     if ((mode == MODE_ALL) || (mode == MODE_X86)) {
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));  // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_STACK, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));    // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_SEGMENT, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));  // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_DEBUG, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));    // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_IP, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));       // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_FLAGS, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));    // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_FPU, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));      // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_XMM, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));      // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_YMM, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));      // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_ZMM, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));      // TODO color
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_INT3, QString("%1|%2").arg(QColor(Qt::darkGray).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_SYSCALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_STACK, sRegStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_SEGMENT, sRegSeg);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_DEBUG, sRegDebug);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_IP, sRegIP);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_FLAGS, sRegFlags);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_FPU, sRegFPU);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_XMM, sRegVec);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_YMM, sRegVec);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_REGS_ZMM, sRegVec);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_NOP, sOpNop);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_INT3, sOpInt3);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_X86_OPCODE_SYSCALL, sOpCall);
     }
 
     if ((mode == MODE_ALL) || (mode == MODE_ARM)) {
         // ARM
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_REGS_STACK, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_BRANCH, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_BRANCHLINK, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_REGS_STACK, sRegStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_BRANCH, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_BRANCHLINK, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_ARM_OPCODE_NOP, sOpNop);
         // TODO more
     }
 
     // Other architectures (only registered in the generic multi-arch mode)
     if (mode == MODE_ALL) {
         // MIPS
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MIPS_OPCODE_NOP, sOpNop);
         // PowerPC
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_PPC_OPCODE_NOP, sOpNop);
         // SPARC
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_SPARC_OPCODE_NOP, sOpNop);
         // M68K
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_M68K_OPCODE_NOP, sOpNop);
         // MOS 65xx
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_MOS65XX_OPCODE_NOP, sOpNop);
         // BPF
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_REGS_GENERAL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_CALL, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_RET, QString("%1|%2").arg(QColor(Qt::red).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_JMP, QString("%1|%2").arg(QColor(Qt::darkBlue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_COND_JMP, QString("%1|%2").arg(QColor(Qt::green).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_PUSH, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_POP, QString("%1|%2").arg(QColor(Qt::blue).name()).arg(""));
-        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_NOP, QString("%1|%2").arg(QColor(Qt::gray).name()).arg(""));
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_REGS_GENERAL, sRegGen);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_CALL, sOpCall);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_RET, sOpRet);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_JMP, sOpJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_COND_JMP, sOpCondJmp);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_PUSH, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_POP, sOpStack);
+        pOptions->addID(XOptions::ID_DISASM_COLOR_BPF_OPCODE_NOP, sOpNop);
     }
 }
 
@@ -204,6 +230,10 @@ QList<DialogViewColors::RECORD> XDisasmViewOptionsWidget::getRecords(MODE mode)
     }
     {
         DialogViewColors::RECORD record = {"", tr("References"), XOptions::ID_DISASM_COLOR_REFS};
+        listResult.append(record);
+    }
+    {
+        DialogViewColors::RECORD record = {tr("Debugger"), tr("Current instruction pointer"), XOptions::ID_DISASM_COLOR_CURRENTIP};
         listResult.append(record);
     }
 
