@@ -24,6 +24,9 @@
 
 XMultiDisasmWidget::XMultiDisasmWidget(QWidget *pParent) : XShortcutsWidget(pParent), ui(new Ui::XMultiDisasmWidget)
 {
+    m_inData = {};
+    m_options = {};
+
     ui->setupUi(this);
 
     XOptions::adjustToolButton(ui->toolButtonVisitedNext, XOptions::ICONTYPE_FORWARD, Qt::ToolButtonIconOnly);
@@ -36,8 +39,6 @@ XMultiDisasmWidget::XMultiDisasmWidget(QWidget *pParent) : XShortcutsWidget(pPar
     ui->checkBoxReadonly->setToolTip(tr("Readonly"));
     ui->comboBoxMethod->setToolTip(tr("Method"));
     ui->comboBoxView->setToolTip(tr("View"));
-
-    m_options = {};
 
     // TODO BPF
     // TODO Check more !!!
