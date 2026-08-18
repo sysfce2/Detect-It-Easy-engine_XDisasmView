@@ -79,7 +79,7 @@ void XMultiDisasmWidget::setData(const XBinary::INDATA &inData, const OPTIONS &o
     m_options = options;
 
     if (pDevice) {
-        XFormats::setFileTypeComboBox(options.fileType, pDevice, ui->comboBoxType, XBinary::TL_OPTION_EXECUTABLE);
+        XFormats::setFileTypeComboBox(options.fileType, pDevice, ui->comboBoxType, XBinary::FT_FLAG_EXECUTABLES);
 
         XBinaryView::OPTIONS viewOptions = {};
         viewOptions.bIsImage = m_inData.bIsImage;
