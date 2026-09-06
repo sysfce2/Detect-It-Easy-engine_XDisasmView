@@ -721,7 +721,7 @@ void XDisasmView::getRecords()
 #endif
 
     for (qint32 i = 0; i < nNumberLinesProPage; i++) {
-        if (nCurrentViewPos < getBinaryView()->getViewSize()) {
+        if (nCurrentViewPos < (XVPOS)getBinaryView()->getViewSize()) {
             qint64 nDataSize = 0;
 
             RECORD record = {};
